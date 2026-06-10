@@ -1,0 +1,62 @@
+
+# PYTHON & VIRTUAL ENVIRONMENT
+# Folder virtual environment (Sangat penting agar tidak ter-upload)
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook Checkpoints (File backup otomatis Jupyter)
+.ipynb_checkpoints/
+
+
+# ENVIRONMENT VARIABLES & SECRETS (KRITIS)
+# File yang berisi password, API key, atau credentials database
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+
+# LOGS & TEMPORARY FILES
+# Folder log aplikasi dan ClickHouse/Metabase
+logs/
+DustiniaDelixia_Groceria/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# IDE & EDITOR FILES
+# Pengaturan editor (VS Code, PyCharm, dll)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# File sistem operasi
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+# DOCKER & METABASE
+.docker/
+
+# Plugin Metabase (Jika berupa file .jar yang besar)
+plugins/*.jar
+metabase-plugins/*.jar
+
