@@ -354,12 +354,5 @@ Final Project - MCI Lab
 
 ---
 
-## Acknowledgments
 
-- **Olist** for providing the public dataset
-- **ClickHouse** team for the powerful OLAP database
-- **Metabase** team for the excellent open-source BI tool
-- **[Instructor/Mentor Name]** for guidance and support
-
----
 
