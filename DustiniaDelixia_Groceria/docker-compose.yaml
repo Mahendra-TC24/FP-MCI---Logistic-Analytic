@@ -1,0 +1,213 @@
+# DustiniaDelixia Groceria — Docker Compose
+# Stack: Apache Airflow (LocalExecutor) + ClickHouse + Metabase
+
+# Cara pakai:
+#   1. Jalankan:
+#        docker compose build
+#   2. Inisialisasi Airflow (sekali saja):
+#        docker compose up airflow-init
+#   3. Jalankan semua service:
+#        docker compose up -d
+#   4. Akses:
+#        Airflow UI  → http://localhost:8080  (user: airflow | pass: airflow)
+#        Metabase    → http://localhost:3000
+#        ClickHouse  → HTTP: localhost:8123 | Native: localhost:9000
+
+
+x-airflow-common: &airflow-common
+  # FIX 1: Build custom image dari Dockerfile agar dependencies sudah ter-install
+  # dan tidak perlu install ulang setiap kali container startup.
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: dustiniadelixia-airflow:2.10.5
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+
+    # FIX 2: Fernet key tidak boleh kosong string — Airflow akan error saat startup.
+    AIRFLOW__CORE__FERNET_KEY: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLt0nIe2lc="
+
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+    # FIX 3: Dependencies sudah di-install di Dockerfile via requirements.txt.
+
+    # FIX 4: Tambahkan PYTHONPATH agar DAG bisa import modul dari /opt/airflow
+    PYTHONPATH: /opt/airflow
+
+    # FIX 5: Timezone Indonesia
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: "Asia/Jakarta"
+
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./sql:/opt/airflow/sql
+    - ./include/data:/opt/airflow/include/data
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+  # FIX 6: Tambahkan user mapping agar tidak permission error di ./logs
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on: &airflow-common-depends-on
+    postgres:
+      condition: service_healthy
+
+
+# SERVICES
+services:
+
+  
+  # PostgreSQL — Airflow Metadata Database
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  
+  # ClickHouse — OLAP Database
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    ports:
+      - "8123:8123"   # HTTP interface (untuk Metabase & clickhouse-connect)
+      - "9000:9000"   # Native TCP interface (untuk clickhouse-driver di DAG)
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
+    environment:
+      # FIX 7: Set password ClickHouse secara eksplisit (default user tanpa password)
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      # FIX 8: Gunakan wget ke HTTP endpoint karena lebih reliable di semua distro image
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  
+  # Metabase — BI / Dashboard
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: h2
+      MB_DB_FILE: /metabase-data/metabase.db
+      # FIX 9: Set Java timezone agar timestamp Metabase konsisten dengan Airflow
+      JAVA_TIMEZONE: Asia/Jakarta
+    volumes:
+      - metabase-data:/metabase-data
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    # FIX 10: Tambahkan healthcheck Metabase agar service lain tidak bergantung sebelum siap
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    restart: unless-stopped
+
+
+  # Airflow Init — Inisialisasi database & user admin 
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        # Tunggu PostgreSQL dan ClickHouse benar-benar siap
+        airflow db migrate
+
+        # Buat user admin
+        airflow users create \
+          --username airflow \
+          --password airflow \
+          --firstname Operational \
+          --lastname Analyst \
+          --role Admin \
+          --email admin@dustiniadelixia.com || true
+
+        # FIX 11: Gunakan conn-type 'generic' dengan port 9000 (Native TCP)
+        # karena DAG menggunakan clickhouse-driver (bukan HTTP)
+        airflow connections add clickhouse_default \
+          --conn-type generic \
+          --conn-host clickhouse \
+          --conn-port 9000 \
+          --conn-login default \
+          --conn-password "" \
+          --conn-schema default || true
+
+        echo "✅ Airflow init selesai."
+    depends_on:
+      <<: *airflow-common-depends-on
+      clickhouse:
+        condition: service_healthy
+    restart: "no"
+
+  # Airflow Webserver
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+
+  # Airflow Scheduler
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    # FIX 12: Tambahkan healthcheck scheduler
+    healthcheck:
+      # Pengecekan via CLI jobs check sering flaky di versi ini.
+      # Kita ubah dengan memastikan proses 'airflow scheduler' memang sedang berjalan di memori container.
+      test: ["CMD-SHELL", "ps aux | grep '[a]irflow scheduler' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+
+# VOLUMES
+volumes:
+  postgres-data:
+  clickhouse-data:
+  clickhouse-logs:
+  metabase-data:

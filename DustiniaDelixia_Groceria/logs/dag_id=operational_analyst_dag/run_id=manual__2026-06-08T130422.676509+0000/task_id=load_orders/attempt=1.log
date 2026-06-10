@@ -1,0 +1,19 @@
+[2026-06-08T13:04:30.269+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-06-08T13:04:30.425+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: operational_analyst_dag.load_orders manual__2026-06-08T13:04:22.676509+00:00 [queued]>
+[2026-06-08T13:04:30.477+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: operational_analyst_dag.load_orders manual__2026-06-08T13:04:22.676509+00:00 [queued]>
+[2026-06-08T13:04:30.481+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 2
+[2026-06-08T13:04:30.529+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): load_orders> on 2026-06-08 13:04:22.676509+00:00
+[2026-06-08T13:04:30.596+0000] {standard_task_runner.py:72} INFO - Started process 276 to run task
+[2026-06-08T13:04:30.631+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'operational_analyst_dag', 'load_orders', 'manual__2026-06-08T13:04:22.676509+00:00', '--job-id', '75', '--raw', '--subdir', 'DAGS_FOLDER/operational_analyst_dag.py', '--cfg-path', '/tmp/tmp1n4jivvx']
+[2026-06-08T13:04:30.665+0000] {standard_task_runner.py:105} INFO - Job 75: Subtask load_orders
+[2026-06-08T13:04:31.297+0000] {task_command.py:467} INFO - Running <TaskInstance: operational_analyst_dag.load_orders manual__2026-06-08T13:04:22.676509+00:00 [running]> on host bc2514ec4b35
+[2026-06-08T13:04:32.005+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='operational_analyst' AIRFLOW_CTX_DAG_ID='operational_analyst_dag' AIRFLOW_CTX_TASK_ID='load_orders' AIRFLOW_CTX_EXECUTION_DATE='2026-06-08T13:04:22.676509+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-06-08T13:04:22.676509+00:00'
+[2026-06-08T13:04:32.022+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-06-08T13:04:34.734+0000] {operational_analyst_dag.py:98} INFO -   Loaded orders.csv: 99,441 baris
+[2026-06-08T13:04:43.736+0000] {operational_analyst_dag.py:156} INFO -  stg_orders loaded: 96,455 baris
+[2026-06-08T13:04:43.852+0000] {python.py:240} INFO - Done. Returned value was: None
+[2026-06-08T13:04:43.874+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-06-08T13:04:43.876+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=operational_analyst_dag, task_id=load_orders, run_id=manual__2026-06-08T13:04:22.676509+00:00, execution_date=20260608T130422, start_date=20260608T130430, end_date=20260608T130443
+[2026-06-08T13:04:43.962+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-06-08T13:04:44.010+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-06-08T13:04:44.013+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

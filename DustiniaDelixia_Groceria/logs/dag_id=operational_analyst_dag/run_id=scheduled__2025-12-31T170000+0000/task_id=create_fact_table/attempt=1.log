@@ -1,0 +1,45 @@
+[2026-06-06T08:41:30.985+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-06-06T08:41:31.020+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: operational_analyst_dag.create_fact_table scheduled__2025-12-31T17:00:00+00:00 [queued]>
+[2026-06-06T08:41:31.039+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: operational_analyst_dag.create_fact_table scheduled__2025-12-31T17:00:00+00:00 [queued]>
+[2026-06-06T08:41:31.040+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 2
+[2026-06-06T08:41:31.054+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): create_fact_table> on 2025-12-31 17:00:00+00:00
+[2026-06-06T08:41:31.065+0000] {standard_task_runner.py:72} INFO - Started process 1366 to run task
+[2026-06-06T08:41:31.070+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'operational_analyst_dag', 'create_fact_table', 'scheduled__2025-12-31T17:00:00+00:00', '--job-id', '67', '--raw', '--subdir', 'DAGS_FOLDER/operational_analyst_dag.py', '--cfg-path', '/tmp/tmp7xxm1jqh']
+[2026-06-06T08:41:31.075+0000] {standard_task_runner.py:105} INFO - Job 67: Subtask create_fact_table
+[2026-06-06T08:41:31.150+0000] {task_command.py:467} INFO - Running <TaskInstance: operational_analyst_dag.create_fact_table scheduled__2025-12-31T17:00:00+00:00 [running]> on host bc2514ec4b35
+[2026-06-06T08:41:31.243+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='operational_analyst' AIRFLOW_CTX_DAG_ID='operational_analyst_dag' AIRFLOW_CTX_TASK_ID='create_fact_table' AIRFLOW_CTX_EXECUTION_DATE='2025-12-31T17:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-12-31T17:00:00+00:00'
+[2026-06-06T08:41:31.245+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-06-06T08:41:31.264+0000] {operational_analyst_dag.py:334} INFO - Executed: DROP TABLE IF EXISTS fact_operational_delivery...
+[2026-06-06T08:41:31.278+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE TABLE IF NOT EXISTS fact_operational_delivery
+(
+    order_id   ...
+[2026-06-06T08:41:31.950+0000] {operational_analyst_dag.py:334} INFO - Executed: INSERT INTO fact_operational_delivery
+SELECT
+    o.order_id,
+    o.cus...
+[2026-06-06T08:41:31.957+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE OR REPLACE VIEW view_delivery_summary AS
+SELECT
+    count()    ...
+[2026-06-06T08:41:31.964+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE OR REPLACE VIEW view_delay_by_state AS
+SELECT
+    customer_stat...
+[2026-06-06T08:41:31.970+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE OR REPLACE VIEW view_seller_performance AS
+SELECT
+    seller_id...
+[2026-06-06T08:41:31.976+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE OR REPLACE VIEW view_sla_stage_breakdown AS
+SELECT
+    round(av...
+[2026-06-06T08:41:31.981+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE OR REPLACE VIEW view_delay_vs_review AS
+SELECT
+    is_delayed,
+...
+[2026-06-06T08:41:31.987+0000] {operational_analyst_dag.py:334} INFO - Executed: CREATE OR REPLACE VIEW view_monthly_trend AS
+SELECT
+    toYYYYMM(order...
+[2026-06-06T08:41:31.994+0000] {operational_analyst_dag.py:341} INFO - fact_operational_delivery loaded: 96,984 baris
+[2026-06-06T08:41:31.995+0000] {python.py:240} INFO - Done. Returned value was: None
+[2026-06-06T08:41:32.010+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-06-06T08:41:32.012+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=operational_analyst_dag, task_id=create_fact_table, run_id=scheduled__2025-12-31T17:00:00+00:00, execution_date=20251231T170000, start_date=20260606T084131, end_date=20260606T084132
+[2026-06-06T08:41:32.087+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-06-06T08:41:32.117+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-06-06T08:41:32.120+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

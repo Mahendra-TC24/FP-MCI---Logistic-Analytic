@@ -1,0 +1,21 @@
+
+# DustiniaDelixia Groceria — Requirements
+
+# FIX: Hapus apache-airflow dari requirements.txt
+# apache-airflow sudah ada di dalam Docker image, mencantumkannya di sini
+# bisa menyebabkan konflik versi dan pip install gagal/lama.
+
+# Data processing
+pandas==2.2.3
+lxml==5.3.1
+numpy==1.26.4
+
+# ClickHouse native driver — dipakai di PythonOperator (clickhouse_driver.Client)
+clickhouse-driver==0.2.9
+
+# ClickHouse HTTP connect — dipakai untuk SQLExecuteQueryOperator & Metabase
+clickhouse-connect==0.8.14
+
+# Airflow provider untuk SQLExecuteQueryOperator
+# FIX: Versi 1.21.0 memerlukan apache-airflow>=2.9.0 — sudah kompatibel dengan 2.10.5
+apache-airflow-providers-common-sql==1.21.0
